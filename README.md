@@ -4,12 +4,18 @@
 
 ## ❓ Why?
 
-Because MongoDB 5.0+ requires AVX CPU instructions. Many VPS, older machines, and embedded systems (like Raspberry Pi) don’t support AVX. This installer solves that problem.
+Because MongoDB 5.0+ requires AVX CPU instructions. Many VPS, older machines, and embedded systems (like Raspberry Pi) don’t support AVX.  
+MongoDB 4.4 is the last version that works **without AVX**, but it requires `libcrypto.so.1.1`, which is missing in modern systems like Debian 12.
+
+This script solves **both** problems:
+
+- ✅ Runs on CPUs **without AVX**
+- ✅ Works even when `libcrypto.so.1.1` / `libssl.so.1.1` is missing
 
 ## ✅ What This Script Does
 
 - Downloads and installs MongoDB 4.4.18 binaries
-- Compiles OpenSSL 1.1.1o from source (required for compatibility)
+- Compiles OpenSSL 1.1.1o from source (replaces missing `libssl.so.1.1`)
 - Sets up `mongod` as a `systemd` service
 - Avoids Docker and all AVX dependencies
 
