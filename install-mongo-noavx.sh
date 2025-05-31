@@ -14,6 +14,7 @@ DBPATH="/data/db"
 
 echo "[+] Erstelle Verzeichnisse..."
 mkdir -p $INSTALL_DIR $OPENSSL_DIR $DBPATH
+mkdir -p /var/log/mongodb
 chmod 777 $DBPATH
 
 echo "[+] Lade MongoDB $MONGO_VERSION herunter..."
@@ -32,6 +33,19 @@ cd openssl-$OPENSSL_VERSION
 make -j$(nproc)
 make install_sw
 
+echo "[+] Erstelle MongoDB-Konfigurationsdatei..."
+cat <<EOF > /etc/mongodb.conf
+storage:
+  dbPath: $DBPATH
+systemLog:
+  destination: file
+  path: /var/log/mongodb/mongod.log
+  logAppend: true
+net:
+  bindIp: 127.0.0.1
+  port: 27017
+EOF
+
 echo "[+] Erstelle systemd-Dienst..."
 cat <<EOF > /etc/systemd/system/mongodb.service
 [Unit]
@@ -39,7 +53,7 @@ Description=MongoDB (ohne AVX, OpenSSL $OPENSSL_VERSION)
 After=network.target
 
 [Service]
-ExecStart=$INSTALL_DIR/mongod --dbpath $DBPATH
+ExecStart=$INSTALL_DIR/mongod --dbpath $DBPATH --config /etc/mongodb.conf
 Environment=LD_LIBRARY_PATH=$OPENSSL_DIR/lib
 Restart=always
 User=root
